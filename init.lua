@@ -102,7 +102,8 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
+vim.opt.tabstop = 4
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -225,8 +226,109 @@ vim.opt.rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
+  {
+    'rafamadriz/friendly-snippets',
+    config = function()
+      require('luasnip.loaders.from_vscode').lazy_load()
+    end,
+  },
+  {
+    'L3MON4D3/LuaSnip',
+    version = 'v2.*',
+    build = 'make install_jsregexp',
+    dependencies = { 'rafamadriz/friendly-snippets' },
+  },
+  {
+    'ibhagwan/fzf-lua',
+    -- optional for icon support
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      -- calling `setup` is optional for customization
+      require('fzf-lua').setup {}
+    end,
+  },
+  {
+    'xiyaowong/transparent.nvim',
+    config = function()
+      require('transparent').setup()
+    end,
+  },
+  {
+    'neanias/everforest-nvim',
+    version = false,
+    lazy = false,
+    priority = 1000, -- make sure to load this before all the other start plugins
+    -- Optional; default configuration will be used if setup isn't called.
+    config = function()
+      require('everforest').setup {
+        vim.cmd.colorscheme 'everforest',
+      }
+    end,
+  },
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('nvim-tree').setup {
+        git = {
+          enable = true,
+          ignore = false,
+          timeout = 400,
+        },
+      }
+      vim.keymap.set('n', 'e', '<CMD>NvimTreeToggle<CR>', { desc = 'Toggle File Explorer' })
+    end,
+  },
+  ---@type LazySpec
+  {
+    'mikavilpas/yazi.nvim',
+    event = 'VeryLazy',
+    keys = {
+      -- 👇 in this section, choose your own keymappings!
+      {
+        '<leader>-',
+        function()
+          require('yazi').yazi()
+        end,
+        desc = 'Open the file manager',
+      },
+      {
+        -- Open in the current working directory
+        '<leader>cw',
+        function()
+          require('yazi').yazi(nil, vim.fn.getcwd())
+        end,
+        desc = "Open the file manager in nvim's working directory",
+      },
+      {
+        '<c-up>',
+        function()
+          -- NOTE: requires a version of yazi that includes
+          -- https://github.com/sxyazi/yazi/pull/1305 from 2024-07-18
+          require('yazi').toggle()
+        end,
+        desc = 'Resume the last yazi session',
+      },
+    },
+    ---@type YaziConfig
+    opts = {
+      -- if you want to open yazi instead of netrw, see below for more info
+      open_for_directories = true,
+
+      -- enable these if you are using the latest version of yazi
+      use_ya_for_events_reading = true,
+      -- use_yazi_client_id_flag = true,
+    },
+  },
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  {
+    'tpope/vim-sleuth',
+    config = function() end,
+  }, -- Detect tabstop and shiftwidth automatically
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
