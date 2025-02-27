@@ -1,90 +1,3 @@
---[[
-
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
--- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
@@ -100,10 +13,10 @@ vim.g.have_nerd_font = true
 
 -- Make line numbers default
 vim.opt.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
-vim.opt.relativenumber = true
-vim.opt.tabstop = 4
+-- Disable relative line numbers
+vim.opt.relativenumber = false
+-- Set tabs at 2 spaces
+vim.opt.tabstop = 2
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -145,8 +58,8 @@ vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.list = false
+-- vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -191,6 +104,13 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Oil
+vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
+
+-- Peek
+vim.keymap.set('n', '<leader>p', '<CMD>PeekOpen<CR>', { desc = 'Open preview of MD file' })
+vim.keymap.set('n', '<leader>P', '<CMD>PeekClose<CR>', { desc = 'Close preview of MD file' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -230,6 +150,55 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   {
+    'toppair/peek.nvim',
+    event = { 'VeryLazy' },
+    build = 'deno task --quiet build:fast',
+    config = function()
+      require('peek').setup {
+        auto_load = true, -- whether to automatically load preview when
+        -- entering another markdown buffer
+        close_on_bdelete = true, -- close preview window on buffer delete
+
+        syntax = true, -- enable syntax highlighting, affects performance
+
+        theme = 'dark', -- 'dark' or 'light'
+
+        update_on_change = true,
+
+        app = { 'google-chrome-stable', '--new-window' },
+        -- 'webview', 'browser', string or a table of strings
+        -- explained below
+
+        filetype = { 'markdown' }, -- list of filetypes to recognize as markdown
+
+        -- relevant if update_on_change is true
+        throttle_at = 200000, -- start throttling when file exceeds this
+        -- amount of bytes in size
+        throttle_time = 'auto', -- minimum amount of time in milliseconds
+        -- that has to pass before starting new render
+      }
+      vim.api.nvim_create_user_command('PeekOpen', require('peek').open, {})
+      vim.api.nvim_create_user_command('PeekClose', require('peek').close, {})
+    end,
+  },
+  {
+    'stevearc/oil.nvim',
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Optional dependencies
+    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+    lazy = false,
+  },
+  {
+    'norcalli/nvim-colorizer.lua',
+    config = function()
+      require('colorizer').setup()
+    end,
+  },
+  {
     'rafamadriz/friendly-snippets',
     config = function()
       require('luasnip.loaders.from_vscode').lazy_load()
@@ -264,8 +233,75 @@ require('lazy').setup({
     -- Optional; default configuration will be used if setup isn't called.
     config = function()
       require('everforest').setup {
-        vim.cmd.colorscheme 'everforest',
+        ---Controls the "hardness" of the background. Options are "soft", "medium" or "hard".
+        ---Default is "medium".
+        background = 'hard',
+        ---How much of the background should be transparent. 2 will have more UI
+        ---components be transparent (e.g. status line background)
+        transparent_background_level = 2,
+        ---Whether italics should be used for keywords and more.
+        italics = false,
+        ---Disable italic fonts for comments. Comments are in italics by default, set
+        ---this to `true` to make them _not_ italic!
+        disable_italic_comments = false,
+        ---By default, the colour of the sign column background is the same as the as normal text
+        ---background, but you can use a grey background by setting this to `"grey"`.
+        sign_column_background = 'none',
+        ---The contrast of line numbers, indent lines, etc. Options are `"high"` or
+        ---`"low"` (default).
+        ui_contrast = 'low',
+        ---Dim inactive windows. Only works in Neovim. Can look a bit weird with Telescope.
+        ---
+        ---When this option is used in conjunction with show_eob set to `false`, the
+        ---end of the buffer will only be hidden inside the active window. Inside
+        ---inactive windows, the end of buffer filler characters will be visible in
+        ---dimmed symbols. This is due to the way Vim and Neovim handle `EndOfBuffer`.
+        dim_inactive_windows = true,
+        ---Some plugins support highlighting error/warning/info/hint texts, by
+        ---default these texts are only underlined, but you can use this option to
+        ---also highlight the background of them.
+        diagnostic_text_highlight = true,
+        ---Which colour the diagnostic text should be. Options are `"grey"` or `"coloured"` (default)
+        diagnostic_virtual_text = 'grey',
+        ---Some plugins support highlighting error/warning/info/hint lines, but this
+        ---feature is disabled by default in this colour scheme.
+        diagnostic_line_highlight = true,
+        ---By default, this color scheme won't colour the foreground of |spell|, instead
+        ---colored under curls will be used. If you also want to colour the foreground,
+        ---set this option to `true`.
+        spell_foreground = false,
+        ---Whether to show the EndOfBuffer highlight.
+        show_eob = true,
+        ---Style used to make floating windows stand out from other windows. `"bright"`
+        ---makes the background of these windows lighter than |hl-Normal|, whereas
+        ---`"dim"` makes it darker.
+        ---
+        ---Floating windows include for instance diagnostic pop-ups, scrollable
+        ---documentation windows from completion engines, overlay windows from
+        ---installers, etc.
+        ---
+        ---NB: This is only significant for dark backgrounds as the light palettes
+        ---have the same colour for both values in the switch.
+        float_style = 'dim',
+        ---Inlay hints are special markers that are displayed inline with the code to
+        ---provide you with additional information. You can use this option to customize
+        ---the background color of inlay hints.
+        ---
+        ---Options are `"none"` or `"dimmed"`.
+        inlay_hints_background = 'dimmed',
+        ---You can override specific highlights to use other groups or a hex colour.
+        ---This function will be called with the highlights and colour palette tables.
+        ---@param highlight_groups Highlights
+        ---@param palette Palette
+        on_highlights = function(highlight_groups, palette) end,
+        ---You can override colours in the palette to use different hex colours.
+        ---This function will be called once the base and background colours have
+        ---been mixed on the palette.
+        ---@param palette Palette
+        colours_override = function(palette) end,
       }
+
+      vim.cmd.colorscheme 'everforest'
     end,
   },
   {
@@ -284,6 +320,7 @@ require('lazy').setup({
         },
       }
       vim.keymap.set('n', 'e', '<CMD>NvimTreeToggle<CR>', { desc = 'Toggle File Explorer' })
+      vim.keymap.set('n', 'nf', '<CMD>NvimTreeFocus<CR>', { desc = 'Focus on Nvim Tree' })
     end,
   },
   ---@type LazySpec
@@ -503,7 +540,13 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        pickers = {
+          find_files = {
+            hidden = true,
+            no_ignore = true,
+          },
+        },
+
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
