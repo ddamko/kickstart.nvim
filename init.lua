@@ -1,3 +1,10 @@
+-- ---------------------------------
+-- ▗▖  ▗▖▗▄▄▄▖ ▗▄▖ ▗▖  ▗▖▗▄▄▄▖▗▖  ▗▖
+-- ▐▛▚▖▐▌▐▌   ▐▌ ▐▌▐▌  ▐▌  █  ▐▛▚▞▜▌
+-- ▐▌ ▝▜▌▐▛▀▀▘▐▌ ▐▌▐▌  ▐▌  █  ▐▌  ▐▌
+-- ▐▌  ▐▌▐▙▄▄▖▝▚▄▞▘ ▝▚▞▘ ▗▄█▄▖▐▌  ▐▌
+-- ----------- Config --------------
+
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
@@ -17,6 +24,8 @@ vim.opt.number = true
 vim.opt.relativenumber = false
 -- Set tabs at 2 spaces
 vim.opt.tabstop = 2
+-- Set Terminal Colors on
+vim.opt.termguicolors = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -24,7 +33,7 @@ vim.opt.mouse = 'a'
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
--- Sync clipboard between OS and Neovim.
+--  Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
@@ -150,6 +159,611 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   {
+    'kndndrj/nvim-dbee',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+    },
+    build = function()
+      -- Install tries to automatically detect the install method.
+      -- if it fails, try calling it with one of these parameters:
+      --    "curl", "wget", "bitsadmin", "go"
+      require('dbee').install()
+    end,
+    config = function()
+      require('dbee').setup(--[[optional config]])
+    end,
+  },
+  {
+    'cuducos/yaml.nvim',
+    ft = { 'yaml' }, -- optional
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-telescope/telescope.nvim', -- optional
+    },
+  },
+  {
+    'folke/snacks.nvim',
+    priority = 1000,
+    lazy = false,
+    ---@type snacks.Config
+    opts = {
+      bigfile = { enabled = true },
+      dashboard = { enabled = true },
+      explorer = { enabled = true },
+      indent = { enabled = true },
+      input = { enabled = true },
+      notifier = {
+        enabled = true,
+        timeout = 3000,
+      },
+      picker = { enabled = true },
+      quickfile = { enabled = true },
+      scope = { enabled = true },
+      scroll = { enabled = true },
+      statuscolumn = { enabled = true },
+      words = { enabled = true },
+      styles = {
+        notification = {
+          -- wo = { wrap = true } -- Wrap notifications
+        },
+      },
+    },
+    keys = {
+      -- Top Pickers & Explorer
+      {
+        '<leader><space>',
+        function()
+          Snacks.picker.smart()
+        end,
+        desc = 'Smart Find Files',
+      },
+      {
+        '<leader>,',
+        function()
+          Snacks.picker.buffers()
+        end,
+        desc = 'Buffers',
+      },
+      {
+        '<leader>/',
+        function()
+          Snacks.picker.grep()
+        end,
+        desc = 'Grep',
+      },
+      {
+        '<leader>:',
+        function()
+          Snacks.picker.command_history()
+        end,
+        desc = 'Command History',
+      },
+      {
+        '<leader>n',
+        function()
+          Snacks.picker.notifications()
+        end,
+        desc = 'Notification History',
+      },
+      {
+        '<leader>e',
+        function()
+          Snacks.explorer()
+        end,
+        desc = 'File Explorer',
+      },
+      -- find
+      {
+        '<leader>fb',
+        function()
+          Snacks.picker.buffers()
+        end,
+        desc = 'Buffers',
+      },
+      {
+        '<leader>fc',
+        function()
+          Snacks.picker.files { cwd = vim.fn.stdpath 'config' }
+        end,
+        desc = 'Find Config File',
+      },
+      {
+        '<leader>ff',
+        function()
+          Snacks.picker.files()
+        end,
+        desc = 'Find Files',
+      },
+      {
+        '<leader>fg',
+        function()
+          Snacks.picker.git_files()
+        end,
+        desc = 'Find Git Files',
+      },
+      {
+        '<leader>fp',
+        function()
+          Snacks.picker.projects()
+        end,
+        desc = 'Projects',
+      },
+      {
+        '<leader>fr',
+        function()
+          Snacks.picker.recent()
+        end,
+        desc = 'Recent',
+      },
+      -- git
+      {
+        '<leader>gb',
+        function()
+          Snacks.picker.git_branches()
+        end,
+        desc = 'Git Branches',
+      },
+      {
+        '<leader>gl',
+        function()
+          Snacks.picker.git_log()
+        end,
+        desc = 'Git Log',
+      },
+      {
+        '<leader>gL',
+        function()
+          Snacks.picker.git_log_line()
+        end,
+        desc = 'Git Log Line',
+      },
+      {
+        '<leader>gs',
+        function()
+          Snacks.picker.git_status()
+        end,
+        desc = 'Git Status',
+      },
+      {
+        '<leader>gS',
+        function()
+          Snacks.picker.git_stash()
+        end,
+        desc = 'Git Stash',
+      },
+      {
+        '<leader>gd',
+        function()
+          Snacks.picker.git_diff()
+        end,
+        desc = 'Git Diff (Hunks)',
+      },
+      {
+        '<leader>gf',
+        function()
+          Snacks.picker.git_log_file()
+        end,
+        desc = 'Git Log File',
+      },
+      -- Grep
+      {
+        '<leader>sb',
+        function()
+          Snacks.picker.lines()
+        end,
+        desc = 'Buffer Lines',
+      },
+      {
+        '<leader>sB',
+        function()
+          Snacks.picker.grep_buffers()
+        end,
+        desc = 'Grep Open Buffers',
+      },
+      {
+        '<leader>sg',
+        function()
+          Snacks.picker.grep()
+        end,
+        desc = 'Grep',
+      },
+      {
+        '<leader>sw',
+        function()
+          Snacks.picker.grep_word()
+        end,
+        desc = 'Visual selection or word',
+        mode = { 'n', 'x' },
+      },
+      -- search
+      {
+        '<leader>s"',
+        function()
+          Snacks.picker.registers()
+        end,
+        desc = 'Registers',
+      },
+      {
+        '<leader>s/',
+        function()
+          Snacks.picker.search_history()
+        end,
+        desc = 'Search History',
+      },
+      {
+        '<leader>sa',
+        function()
+          Snacks.picker.autocmds()
+        end,
+        desc = 'Autocmds',
+      },
+      {
+        '<leader>sb',
+        function()
+          Snacks.picker.lines()
+        end,
+        desc = 'Buffer Lines',
+      },
+      {
+        '<leader>sc',
+        function()
+          Snacks.picker.command_history()
+        end,
+        desc = 'Command History',
+      },
+      {
+        '<leader>sC',
+        function()
+          Snacks.picker.commands()
+        end,
+        desc = 'Commands',
+      },
+      {
+        '<leader>sd',
+        function()
+          Snacks.picker.diagnostics()
+        end,
+        desc = 'Diagnostics',
+      },
+      {
+        '<leader>sD',
+        function()
+          Snacks.picker.diagnostics_buffer()
+        end,
+        desc = 'Buffer Diagnostics',
+      },
+      {
+        '<leader>sh',
+        function()
+          Snacks.picker.help()
+        end,
+        desc = 'Help Pages',
+      },
+      {
+        '<leader>sH',
+        function()
+          Snacks.picker.highlights()
+        end,
+        desc = 'Highlights',
+      },
+      {
+        '<leader>si',
+        function()
+          Snacks.picker.icons()
+        end,
+        desc = 'Icons',
+      },
+      {
+        '<leader>sj',
+        function()
+          Snacks.picker.jumps()
+        end,
+        desc = 'Jumps',
+      },
+      {
+        '<leader>sk',
+        function()
+          Snacks.picker.keymaps()
+        end,
+        desc = 'Keymaps',
+      },
+      {
+        '<leader>sl',
+        function()
+          Snacks.picker.loclist()
+        end,
+        desc = 'Location List',
+      },
+      {
+        '<leader>sm',
+        function()
+          Snacks.picker.marks()
+        end,
+        desc = 'Marks',
+      },
+      {
+        '<leader>sM',
+        function()
+          Snacks.picker.man()
+        end,
+        desc = 'Man Pages',
+      },
+      {
+        '<leader>sp',
+        function()
+          Snacks.picker.lazy()
+        end,
+        desc = 'Search for Plugin Spec',
+      },
+      {
+        '<leader>sq',
+        function()
+          Snacks.picker.qflist()
+        end,
+        desc = 'Quickfix List',
+      },
+      {
+        '<leader>sR',
+        function()
+          Snacks.picker.resume()
+        end,
+        desc = 'Resume',
+      },
+      {
+        '<leader>su',
+        function()
+          Snacks.picker.undo()
+        end,
+        desc = 'Undo History',
+      },
+      {
+        '<leader>uC',
+        function()
+          Snacks.picker.colorschemes()
+        end,
+        desc = 'Colorschemes',
+      },
+      -- LSP
+      {
+        'gd',
+        function()
+          Snacks.picker.lsp_definitions()
+        end,
+        desc = 'Goto Definition',
+      },
+      {
+        'gD',
+        function()
+          Snacks.picker.lsp_declarations()
+        end,
+        desc = 'Goto Declaration',
+      },
+      {
+        'gr',
+        function()
+          Snacks.picker.lsp_references()
+        end,
+        nowait = true,
+        desc = 'References',
+      },
+      {
+        'gI',
+        function()
+          Snacks.picker.lsp_implementations()
+        end,
+        desc = 'Goto Implementation',
+      },
+      {
+        'gy',
+        function()
+          Snacks.picker.lsp_type_definitions()
+        end,
+        desc = 'Goto T[y]pe Definition',
+      },
+      {
+        '<leader>ss',
+        function()
+          Snacks.picker.lsp_symbols()
+        end,
+        desc = 'LSP Symbols',
+      },
+      {
+        '<leader>sS',
+        function()
+          Snacks.picker.lsp_workspace_symbols()
+        end,
+        desc = 'LSP Workspace Symbols',
+      },
+      -- Other
+      {
+        '<leader>z',
+        function()
+          Snacks.zen()
+        end,
+        desc = 'Toggle Zen Mode',
+      },
+      {
+        '<leader>Z',
+        function()
+          Snacks.zen.zoom()
+        end,
+        desc = 'Toggle Zoom',
+      },
+      {
+        '<leader>.',
+        function()
+          Snacks.scratch()
+        end,
+        desc = 'Toggle Scratch Buffer',
+      },
+      {
+        '<leader>S',
+        function()
+          Snacks.scratch.select()
+        end,
+        desc = 'Select Scratch Buffer',
+      },
+      {
+        '<leader>n',
+        function()
+          Snacks.notifier.show_history()
+        end,
+        desc = 'Notification History',
+      },
+      {
+        '<leader>bd',
+        function()
+          Snacks.bufdelete()
+        end,
+        desc = 'Delete Buffer',
+      },
+      {
+        '<leader>cR',
+        function()
+          Snacks.rename.rename_file()
+        end,
+        desc = 'Rename File',
+      },
+      {
+        '<leader>gB',
+        function()
+          Snacks.gitbrowse()
+        end,
+        desc = 'Git Browse',
+        mode = { 'n', 'v' },
+      },
+      {
+        '<leader>gg',
+        function()
+          Snacks.lazygit()
+        end,
+        desc = 'Lazygit',
+      },
+      {
+        '<leader>un',
+        function()
+          Snacks.notifier.hide()
+        end,
+        desc = 'Dismiss All Notifications',
+      },
+      {
+        '<c-/>',
+        function()
+          Snacks.terminal()
+        end,
+        desc = 'Toggle Terminal',
+      },
+      {
+        '<c-_>',
+        function()
+          Snacks.terminal()
+        end,
+        desc = 'which_key_ignore',
+      },
+      {
+        ']]',
+        function()
+          Snacks.words.jump(vim.v.count1)
+        end,
+        desc = 'Next Reference',
+        mode = { 'n', 't' },
+      },
+      {
+        '[[',
+        function()
+          Snacks.words.jump(-vim.v.count1)
+        end,
+        desc = 'Prev Reference',
+        mode = { 'n', 't' },
+      },
+      {
+        '<leader>N',
+        desc = 'Neovim News',
+        function()
+          Snacks.win {
+            file = vim.api.nvim_get_runtime_file('doc/news.txt', false)[1],
+            width = 0.6,
+            height = 0.6,
+            wo = {
+              spell = false,
+              wrap = false,
+              signcolumn = 'yes',
+              statuscolumn = ' ',
+              conceallevel = 3,
+            },
+          }
+        end,
+      },
+    },
+    init = function()
+      vim.api.nvim_create_autocmd('User', {
+        pattern = 'VeryLazy',
+        callback = function()
+          -- Setup some globals for debugging (lazy-loaded)
+          _G.dd = function(...)
+            Snacks.debug.inspect(...)
+          end
+          _G.bt = function()
+            Snacks.debug.backtrace()
+          end
+          vim.print = _G.dd -- Override print to use snacks for `:=` command
+
+          -- Create some toggle mappings
+          Snacks.toggle.option('spell', { name = 'Spelling' }):map '<leader>us'
+          Snacks.toggle.option('wrap', { name = 'Wrap' }):map '<leader>uw'
+          Snacks.toggle.option('relativenumber', { name = 'Relative Number' }):map '<leader>uL'
+          Snacks.toggle.diagnostics():map '<leader>ud'
+          Snacks.toggle.line_number():map '<leader>ul'
+          Snacks.toggle.option('conceallevel', { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 }):map '<leader>uc'
+          Snacks.toggle.treesitter():map '<leader>uT'
+          Snacks.toggle.option('background', { off = 'light', on = 'dark', name = 'Dark Background' }):map '<leader>ub'
+          Snacks.toggle.inlay_hints():map '<leader>uh'
+          Snacks.toggle.indent():map '<leader>ug'
+          Snacks.toggle.dim():map '<leader>uD'
+        end,
+      })
+    end,
+  },
+  {
+    'kdheepak/lazygit.nvim',
+    lazy = true,
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
+    },
+    -- optional for floating window border decoration
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    -- setting the keybinding for LazyGit with 'keys' is recommended in
+    -- order to load the plugin when the command is run for the first time
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    },
+  },
+  {
+    'mgierada/lazydocker.nvim',
+    dependencies = { 'akinsho/toggleterm.nvim' },
+    config = function()
+      require('lazydocker').setup {
+        border = 'curved', -- valid options are "single" | "double" | "shadow" | "curved"
+      }
+    end,
+    event = 'BufRead',
+    keys = {
+      {
+        '<leader>ld',
+        function()
+          require('lazydocker').open()
+        end,
+        desc = 'Open Lazydocker floating window',
+      },
+    },
+  },
+  {
     'toppair/peek.nvim',
     event = { 'VeryLazy' },
     build = 'deno task --quiet build:fast',
@@ -179,6 +793,90 @@ require('lazy').setup({
       }
       vim.api.nvim_create_user_command('PeekOpen', require('peek').open, {})
       vim.api.nvim_create_user_command('PeekClose', require('peek').close, {})
+    end,
+  },
+  {
+    'xiyaowong/transparent.nvim',
+    config = function()
+      require('transparent').setup {
+        -- table: default groups
+        groups = {
+          'Normal',
+          'NormalNC',
+          'Comment',
+          'Constant',
+          'Special',
+          'Identifier',
+          'Statement',
+          'PreProc',
+          'Type',
+          'Underlined',
+          'Todo',
+          'String',
+          'Function',
+          'Conditional',
+          'Repeat',
+          'Operator',
+          'Structure',
+          'LineNr',
+          'NonText',
+          'SignColumn',
+          'CursorLine',
+          'CursorLineNr',
+          'StatusLine',
+          'StatusLineNC',
+          'EndOfBuffer',
+        },
+        -- table: additional groups that should be cleared
+        extra_groups = {},
+        -- table: groups you don't want to clear
+        exclude_groups = {},
+        -- function: code to be executed after highlight groups are cleared
+        -- Also the user event "TransparentClear" will be triggered
+        on_clear = function() end,
+      }
+    end,
+  },
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    ---@module "ibl"
+    ---@type ibl.config
+    opts = {},
+    config = function()
+      require('ibl').setup {
+        exclude = {
+          filetypes = {
+            -- List of filetypes to exclude
+            'help',
+            'dashboard',
+            'packer',
+            'neogitstatus',
+            'NvimTree',
+            'Trouble',
+            -- Add any other filetypes you want to exclude
+          },
+          buftypes = { 'terminal', 'nofile' },
+        },
+        -- This is where we specify to only show for yaml and toml
+        -- Using the inverse of the exclude logic
+        enabled = false, -- Disable for all files by default
+      }
+
+      -- Create an autocommand group for our indent line customizations
+      local indent_blankline_group = vim.api.nvim_create_augroup('IndentBlanklineGroup', { clear = true })
+
+      -- Only enable for yaml and toml files
+      vim.api.nvim_create_autocmd({ 'FileType' }, {
+        pattern = { 'yaml', 'toml' },
+        callback = function()
+          require('ibl').setup_buffer(0, {
+            indent = { char = '⦙' }, -- Set dotted pipe for indent character
+            enabled = true, -- Enable for these specific filetypes
+          })
+        end,
+        group = indent_blankline_group,
+      })
     end,
   },
   {
@@ -220,84 +918,27 @@ require('lazy').setup({
     end,
   },
   {
-    'xiyaowong/transparent.nvim',
-    config = function()
-      require('transparent').setup()
-    end,
-  },
-  {
     'neanias/everforest-nvim',
     version = false,
     lazy = false,
-    priority = 1000, -- make sure to load this before all the other start plugins
-    -- Optional; default configuration will be used if setup isn't called.
+    priority = 1000,
     config = function()
       require('everforest').setup {
-        ---Controls the "hardness" of the background. Options are "soft", "medium" or "hard".
-        ---Default is "medium".
         background = 'hard',
-        ---How much of the background should be transparent. 2 will have more UI
-        ---components be transparent (e.g. status line background)
         transparent_background_level = 2,
-        ---Whether italics should be used for keywords and more.
         italics = false,
-        ---Disable italic fonts for comments. Comments are in italics by default, set
-        ---this to `true` to make them _not_ italic!
         disable_italic_comments = false,
-        ---By default, the colour of the sign column background is the same as the as normal text
-        ---background, but you can use a grey background by setting this to `"grey"`.
         sign_column_background = 'none',
-        ---The contrast of line numbers, indent lines, etc. Options are `"high"` or
-        ---`"low"` (default).
         ui_contrast = 'low',
-        ---Dim inactive windows. Only works in Neovim. Can look a bit weird with Telescope.
-        ---
-        ---When this option is used in conjunction with show_eob set to `false`, the
-        ---end of the buffer will only be hidden inside the active window. Inside
-        ---inactive windows, the end of buffer filler characters will be visible in
-        ---dimmed symbols. This is due to the way Vim and Neovim handle `EndOfBuffer`.
         dim_inactive_windows = true,
-        ---Some plugins support highlighting error/warning/info/hint texts, by
-        ---default these texts are only underlined, but you can use this option to
-        ---also highlight the background of them.
         diagnostic_text_highlight = true,
-        ---Which colour the diagnostic text should be. Options are `"grey"` or `"coloured"` (default)
         diagnostic_virtual_text = 'grey',
-        ---Some plugins support highlighting error/warning/info/hint lines, but this
-        ---feature is disabled by default in this colour scheme.
         diagnostic_line_highlight = true,
-        ---By default, this color scheme won't colour the foreground of |spell|, instead
-        ---colored under curls will be used. If you also want to colour the foreground,
-        ---set this option to `true`.
         spell_foreground = false,
-        ---Whether to show the EndOfBuffer highlight.
         show_eob = true,
-        ---Style used to make floating windows stand out from other windows. `"bright"`
-        ---makes the background of these windows lighter than |hl-Normal|, whereas
-        ---`"dim"` makes it darker.
-        ---
-        ---Floating windows include for instance diagnostic pop-ups, scrollable
-        ---documentation windows from completion engines, overlay windows from
-        ---installers, etc.
-        ---
-        ---NB: This is only significant for dark backgrounds as the light palettes
-        ---have the same colour for both values in the switch.
         float_style = 'dim',
-        ---Inlay hints are special markers that are displayed inline with the code to
-        ---provide you with additional information. You can use this option to customize
-        ---the background color of inlay hints.
-        ---
-        ---Options are `"none"` or `"dimmed"`.
         inlay_hints_background = 'dimmed',
-        ---You can override specific highlights to use other groups or a hex colour.
-        ---This function will be called with the highlights and colour palette tables.
-        ---@param highlight_groups Highlights
-        ---@param palette Palette
         on_highlights = function(highlight_groups, palette) end,
-        ---You can override colours in the palette to use different hex colours.
-        ---This function will be called once the base and background colours have
-        ---been mixed on the palette.
-        ---@param palette Palette
         colours_override = function(palette) end,
       }
 
@@ -319,11 +960,8 @@ require('lazy').setup({
           timeout = 400,
         },
       }
-      vim.keymap.set('n', 'e', '<CMD>NvimTreeToggle<CR>', { desc = 'Toggle File Explorer' })
-      vim.keymap.set('n', 'nf', '<CMD>NvimTreeFocus<CR>', { desc = 'Focus on Nvim Tree' })
     end,
   },
-  ---@type LazySpec
   {
     'mikavilpas/yazi.nvim',
     event = 'VeryLazy',
@@ -364,36 +1002,6 @@ require('lazy').setup({
       -- use_yazi_client_id_flag = true,
     },
   },
-  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  {
-    'tpope/vim-sleuth',
-    config = function() end,
-  }, -- Detect tabstop and shiftwidth automatically
-
-  {
-    'neanias/everforest-nvim',
-    version = false,
-    lazy = false,
-    priority = 1000, -- make sure to load this before all the other start plugins
-    -- Optional; default configuration will be used if setup isn't called.
-    config = function()
-      require('everforest').setup {
-        vim.cmd.colorscheme 'everforest',
-      }
-    end,
-  },
-  -- NOTE: Plugins can also be added by using a table,
-  -- with the first argument being the link and the following
-  -- keys can be used to configure plugin behavior/loading/etc.
-  --
-  -- Use `opts = {}` to force a plugin to be loaded.
-  --
-
-  -- Here is a more advanced example where we pass configuration
-  -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
-  --    require('gitsigns').setup({ ... })
-  --
-  -- See `:help gitsigns` to understand what the configuration keys do
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
     opts = {
@@ -406,21 +1014,6 @@ require('lazy').setup({
       },
     },
   },
-
-  -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
-  --
-  -- This is often very useful to both group configuration, as well as handle
-  -- lazy loading plugins that don't need to be loaded immediately at startup.
-  --
-  -- For example, in the following configuration, we use:
-  --  event = 'VimEnter'
-  --
-  -- which loads which-key before all the UI elements are loaded. Events can be
-  -- normal autocommands events (`:help autocmd-events`).
-  --
-  -- Then, because we use the `opts` key (recommended), the configuration runs
-  -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
-
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
@@ -477,14 +1070,6 @@ require('lazy').setup({
       },
     },
   },
-
-  -- NOTE: Plugins can specify dependencies.
-  --
-  -- The dependencies are proper plugin specifications as well - anything
-  -- you do for a plugin at the top level, you can do for a dependency.
-  --
-  -- Use the `dependencies` key to specify the dependencies of a particular plugin
-
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
