@@ -22,8 +22,6 @@ vim.g.have_nerd_font = true
 vim.opt.number = true
 -- Disable relative line numbers
 vim.opt.relativenumber = false
--- Set tabs at 2 spaces
-vim.opt.tabstop = 2
 -- Set Terminal Colors on
 vim.opt.termguicolors = true
 
@@ -80,6 +78,8 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.expandtab = true
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -90,6 +90,32 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+function OpenDiagnosticIfNoFloat()
+  for _, winid in pairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.api.nvim_win_get_config(winid).zindex then
+      return
+    end
+  end
+  -- THIS IS FOR BUILTIN LSP
+  vim.diagnostic.open_float(nil, {
+    scope = 'cursor',
+    focusable = false,
+    close_events = {
+      'CursorMoved',
+      'CursorMovedI',
+      'BufHidden',
+      'InsertCharPre',
+      'WinLeave',
+    },
+  })
+end
+-- Show diagnostics under the cursor when holding position
+vim.api.nvim_create_augroup('lsp_diagnostics_hold', { clear = true })
+vim.api.nvim_create_autocmd({ 'CursorHold' }, {
+  pattern = '*',
+  command = 'lua OpenDiagnosticIfNoFloat()',
+  group = 'lsp_diagnostics_hold',
+})
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -106,7 +132,6 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
---
 --  See `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
@@ -796,46 +821,15 @@ require('lazy').setup({
     end,
   },
   {
-    'xiyaowong/transparent.nvim',
-    config = function()
-      require('transparent').setup {
-        -- table: default groups
-        groups = {
-          'Normal',
-          'NormalNC',
-          'Comment',
-          'Constant',
-          'Special',
-          'Identifier',
-          'Statement',
-          'PreProc',
-          'Type',
-          'Underlined',
-          'Todo',
-          'String',
-          'Function',
-          'Conditional',
-          'Repeat',
-          'Operator',
-          'Structure',
-          'LineNr',
-          'NonText',
-          'SignColumn',
-          'CursorLine',
-          'CursorLineNr',
-          'StatusLine',
-          'StatusLineNC',
-          'EndOfBuffer',
-        },
-        -- table: additional groups that should be cleared
-        extra_groups = {},
-        -- table: groups you don't want to clear
-        exclude_groups = {},
-        -- function: code to be executed after highlight groups are cleared
-        -- Also the user event "TransparentClear" will be triggered
-        on_clear = function() end,
-      }
-    end,
+    'luckasRanarison/tailwind-tools.nvim',
+    name = 'tailwind-tools',
+    build = ':UpdateRemotePlugins',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-telescope/telescope.nvim', -- optional
+      'neovim/nvim-lspconfig', -- optional
+    },
+    opts = {}, -- your configuration
   },
   {
     'lukas-reineke/indent-blankline.nvim',
@@ -907,6 +901,9 @@ require('lazy').setup({
     version = 'v2.*',
     build = 'make install_jsregexp',
     dependencies = { 'rafamadriz/friendly-snippets' },
+    config = function()
+      require('luasnip').filetype_extend('typescript', { 'angular' })
+    end,
   },
   {
     'ibhagwan/fzf-lua',
@@ -925,7 +922,7 @@ require('lazy').setup({
     config = function()
       require('everforest').setup {
         background = 'hard',
-        transparent_background_level = 2,
+        transparent_background_level = 0,
         italics = false,
         disable_italic_comments = false,
         sign_column_background = 'none',
@@ -1532,13 +1529,13 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          -- ['<C-y>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
-          --['<CR>'] = cmp.mapping.confirm { select = true },
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<CR>'] = cmp.mapping.confirm { select = true },
+          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
